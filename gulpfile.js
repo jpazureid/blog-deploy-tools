@@ -25,12 +25,13 @@ if (branchName !== "master" && branchName && previewBaseUrl) {
   ).toString();
 }
 
-const sourceFolder = "articles";
+const sourceFolder = "../articles";
 let markdownFiles = path.join(sourceFolder, "**/*.md");
 let imageFiles = path.join(sourceFolder, "**/*.+(jpg|jpeg|png|gif|svg|bmp|JPG|JPEG|PNG|GIF|SVG|BMP)");
 const outputPath = "source/_posts/";
+
 const Hexo = require("hexo");
-const hexo = new Hexo(process.cwd(), {});
+const hexo = new Hexo(process.cwd(), {config: "../_config.yml"});
 
 var replaceOptions = {
   logs: {
@@ -39,22 +40,23 @@ var replaceOptions = {
 };
 
 const cloneTheme = (done, isFailed) => {
-
+  process.chdir("./blog-deploy-tools");
   const callback = (err) => {
     if(err){
       if(isFailed){
         done(err);
       }
-      del("./theme/**/*").then(() => {
+      del("./themes/**/*").then(() => {
         cloneTheme(done, true);
       });  
     }
   };
-
-  if(fs.existsSync("./theme/jpazure/.git")){
-    git.pull("origin", "master", {cwd: "./theme/jpazure/"}, callback);
+  if(fs.existsSync("./themes/jpazure/.git")){
+    git.pull("origin", "master", {cwd: "./themes/jpazure/"}, callback);
+    done();
   }else {
-    git.clone('git@github.com:jpazureid/hexo-theme-jpazure.git', {args: './theme/jpazure'}, callback);
+    git.clone('git@github.com:jpazureid/hexo-theme-jpazure.git', {args: './themes/jpazure'}, callback);
+    done();
   }
 }
 
@@ -66,8 +68,6 @@ const server = (done) => {
       return hexo.call("clean", {});
     })
     .then(function() {
-      console.log(hexo.extend);
-      console.log(hexo.config)
       return hexo.call("server", {});
     })
     .then(function () {
@@ -195,6 +195,10 @@ const copyMarkdown = () => {
 
 const copyImage = () => {
   return src(imageFiles, { base: sourceFolder, since: lastRun(copyImage) }).pipe(dest(outputPath));
+};
+
+const copySourceFiles = () => {
+  return src(["../source/**/*"], { since: lastRun(copySourceFiles) }).pipe(dest("./source/"));
 };
 
 // TODO copy only changed files
@@ -367,27 +371,29 @@ const deleteMergedPreview = async () => {
   }
 };
 
+const init = series(copySourceFiles, cloneTheme);
+
 exports.server = series(
-  cloneTheme,
+  init,
   cleanOutputPath,
   parallel(copyMarkdown, copyImage),
   server,
   watchFiles
 );
 exports.publish = series(
-  cloneTheme,
+  init,
   cleanOutputPath,
   parallel(copyMarkdown, copyImage),
   deploy
 );
 exports.build = series(
-  cloneTheme,
+  init,
   cleanOutputPath,
   parallel(copyMarkdown, copyImage),
   generate
 );
 exports.uploadPreview = series(
-  cloneTheme,
+  init,
   parallel(
     deleteBlobFolderIfExist,
     series(
