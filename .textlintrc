@@ -1,0 +1,17 @@
+{
+  "filters": {
+    "comments": true,
+    "whitelist": {
+      "allow": [
+        "/.\\/./",
+        "/\\*注\\d/",
+        "/\d*:\d*/",
+        "/※\d*/",
+        "/“.*”/",
+      ]
+    }
+  },
+  "rules": {
+    "ms-japanese-style-guide-modoki": true
+  }
+}
