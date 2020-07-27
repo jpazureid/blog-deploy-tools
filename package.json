@@ -2,7 +2,7 @@
   "name": "jpazureid-blog-deploy-tools",
   "version": "0.1.0",
   "private": true,
-  "main": "index.js",
+  "main": "gulp.js",
   "hexo": {
     "version": "4.2.0"
   },
