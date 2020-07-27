@@ -31,7 +31,7 @@ let imageFiles = path.join(sourceFolder, "**/*.+(jpg|jpeg|png|gif|svg|bmp|JPG|JP
 const outputPath = "source/_posts/";
 
 const Hexo = require("hexo");
-const hexo = new Hexo(process.cwd(), {config: "../_config.yml"});
+const hexo = new Hexo(path.join(process.cwd(), "blog-deploy-tools/"), {config: "../_config.yml"});
 
 var replaceOptions = {
   logs: {
@@ -40,7 +40,6 @@ var replaceOptions = {
 };
 
 const cloneTheme = (done, isFailed) => {
-  process.chdir("./blog-deploy-tools");
   const callback = (err) => {
     if(err){
       if(isFailed){
